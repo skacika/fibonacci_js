@@ -14,8 +14,33 @@
     }
 
     .yellow {
-        animation-name: example;
-        animation-duration: 2s;
+        animation-name: yellowAnimation;
+        animation-duration: 0.5s;
+    }
+
+    .green {
+        animation-name: greenAnimation;
+        animation-duration: 0.5s;
+    }
+
+    @keyframes yellowAnimation {
+        from {
+            background-color: yellow;
+        }
+
+        to {
+            background-color: white;
+        }
+    }
+
+    @keyframes greenAnimation {
+        from {
+            background-color: lightgreen;
+        }
+
+        to {
+            background-color: white;
+        }
     }
 
     #container>div {
@@ -57,10 +82,9 @@
         for (var r = 0; r < map.length; r++) {
             for (var c = 0; c < map[r].length; c++) {
                 let cell = map[r][c];
+
                 if (cell.element.dataset.toclean == "true") {
                     cleanCell(cell);
-                } else if (cell.element.dataset.isfibo == "false") {
-                    colorFlash(cell.element);
                 }
                 cell.element.innerText = cell.value;
             }
@@ -96,8 +120,9 @@
 
             map[ri][c].element.setAttribute('data-isfibo', isFibonacci(map[ri][c].value));
 
-            window.clearTimeout(map[ri][c].element.dataset.timer);
-            map[ri][c].element.setAttribute('data-timer', colorFlash(map[ri][c].element, 'lightyellow'));
+            colorFlash(map[ri][c].element, false);
+            // window.clearTimeout(map[ri][c].element.dataset.timer);
+            // map[ri][c].element.setAttribute('data-timer', colorFlash(map[ri][c].element, 'lightyellow'));
         }
         for (var ci = 0; ci < map[r].length; ci++) {
             if (ci !== c) {
@@ -105,8 +130,9 @@
                 map[r][ci].value += 1;
                 map[r][ci].element.setAttribute('data-isfibo', isFibonacci(map[r][ci].value));
 
-                window.clearTimeout(map[r][ci].element.dataset.timer);
-                map[r][ci].element.setAttribute('data-timer', colorFlash(map[r][ci].element, 'lightyellow'));
+                // window.clearTimeout(map[r][ci].element.dataset.timer);
+                colorFlash(map[r][ci].element, false);
+                // map[r][ci].element.setAttribute('data-timer', colorFlash(map[r][ci].element, 'lightyellow'));
             }
         }
         render();
@@ -122,32 +148,36 @@
 
         for (var ri = 0; ri < map.length; ri++) {
 
-            let counter = 2;
+            let counter = 0;
             let fiboSqeuence = []
             for (var ci = 0; ci < map[ri].length; ci++) {
 
                 if (map[ri][ci].element.dataset.isfibo == "true") {
 
-                    let curr = {
-                        val: map[ri][ci].value,
-                        col: ci,
-                        pos: positionAtFibonacci(map[ri][ci].value)
-                    }
+                    if (ci == 0 ) { //first element
+                        counter++;
+                        fiboSqeuence.push(map[ri][ci]);
+                    } else if (ci == 1) {//second element 
+                        if (map[ri][ci - 1].element.dataset.isfibo && //prev is fibo
+                            map[ri][ci].value - map[ri][ci - 1].value < map[ri][ci - 1].value && //diff between current and prev is lower then the prev
+                            isFibonacci(map[ri][ci].value - map[ri][ci - 1].value)) { //diff between current and prev is also a fibo ([1,3] case)
 
-                    fiboSqeuence.push(map[ri][ci]);
-
-                    if (ci > 1) {
+                            counter++;
+                            fiboSqeuence.push(map[ri][ci]);
+                        }
+                    } else if (ci >= 2) {
                         if (map[ri][ci - 1].element.dataset.isfibo == "true" &&
                             map[ri][ci - 2].element.dataset.isfibo == "true" && //the two number before are Fibonacci numbers
                             map[ri][ci - 2].value + map[ri][ci - 1].value == map[ri][ci].value //the sum of the two before values is equal to the current
                         ) {
                             counter++;
+                            fiboSqeuence.push(map[ri][ci]);
                         }
                     }
                 }
                 else {
                     fiboSqeuence = [];
-                    counter = 2;
+                    counter = 0;
                 }
                 if (counter == sequenceNumber) {
                     prepareToClean(fiboSqeuence);
@@ -158,13 +188,17 @@
         render();
     }
 
-    function colorFlash(element, color) {
-        element.style.backgroundColor = color;
-        return setTimeout(colorClear, 1000, element);
-    }
+    function colorFlash(element, isClean) {
 
-    function colorClear(element) {
-        element.style.backgroundColor = 'white';
+        let colorClass = isClean ? 'green' : 'yellow';
+        element.classList.remove('green');
+        element.classList.remove('yellow');
+        element.classList.add(colorClass);
+        element.style.animation = "none";
+        //layout thrasing.  https://gist.github.com/paulirish/5d52fb081b3570c81e3a
+        //we need this workaround to re-animate the coloring effect.
+        element.offsetLeft;
+        element.style.animation = null;
     }
 
     function prepareToClean(toCleanArray) {
@@ -178,7 +212,7 @@
         cell.value = null;
         cell.element.setAttribute('data-isfibo', false);
         cell.element.setAttribute('data-toclean', false);
-        colorFlash(cell.element, 'lightgreen');
+        colorFlash(cell.element, true);
     }
 
     function positionAtFibonacci(number) {
