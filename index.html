@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>My test page</title>
+</head>
+<style>
+    #container {
+        display: grid;
+        grid-template-columns: repeat(10, 50px);
+        grid-template-rows: repeat(10, 50px);
+        gap: 1px;
+    }
+
+    .yellow {
+        animation-name: example;
+        animation-duration: 2s;
+    }
+
+    #container>div {
+        background-color: white;
+        border: solid 1px lightgray;
+        text-align: center;
+        /* iOS Safari */
+        -webkit-touch-callout: none;
+        /* Safari */
+        -webkit-user-select: none;
+        /* Konqueror HTML */
+        -khtml-user-select: none;
+        /* Firefox */
+        -moz-user-select: none;
+        /* Internet Explorer/Edge */
+        -ms-user-select: none;
+        /* Non-prefixed version, currently
+        supported by Chrome and Opera */
+        user-select: none;
+    }
+</style>
+
+<body>
+    <div id='container'>
+    </div>
+    <button onclick='generate()'>
+        Generate
+    </button>
+</body>
+<script>
+
+    const size = 10;
+    const sequenceNumber = 5
+    var map = [];
+
+    function render() {
+        let container = document.getElementById('container');
+        console.log('rendering');
+        for (var r = 0; r < map.length; r++) {
+            for (var c = 0; c < map[r].length; c++) {
+                let cell = map[r][c];
+                if (cell.element.dataset.toclean == "true") {
+                    cleanCell(cell);
+                } else if (cell.element.dataset.isfibo == "false") {
+                    colorFlash(cell.element);
+                }
+                cell.element.innerText = cell.value;
+            }
+        }
+    }
+
+    function generate() {
+        let container = document.getElementById('container');
+        container.innerHTML = '';
+
+        for (var r = 0; r < size; r++) {
+            map[r] = [];
+            for (var c = 0; c < size; c++) {
+                let t = document.createElement('div');
+                t.setAttribute('data-row', r);
+                t.setAttribute('data-column', c);
+                t.onclick = raise;
+                map[r][c] = { element: t, value: null };
+                container.appendChild(map[r][c].element);
+            }
+        }
+        render();
+    }
+
+    function raise(sender) {
+        console.log('raised by:', sender.target.dataset.row, sender.target.dataset.column);
+        let r = Number(sender.target.dataset.row);
+        let c = Number(sender.target.dataset.column);
+        let timehandler;
+
+        for (var ri = 0; ri < map.length; ri++) {
+            map[ri][c].value += 1;
+
+            map[ri][c].element.setAttribute('data-isfibo', isFibonacci(map[ri][c].value));
+
+            window.clearTimeout(map[ri][c].element.dataset.timer);
+            map[ri][c].element.setAttribute('data-timer', colorFlash(map[ri][c].element, 'lightyellow'));
+        }
+        for (var ci = 0; ci < map[r].length; ci++) {
+            if (ci !== c) {
+
+                map[r][ci].value += 1;
+                map[r][ci].element.setAttribute('data-isfibo', isFibonacci(map[r][ci].value));
+
+                window.clearTimeout(map[r][ci].element.dataset.timer);
+                map[r][ci].element.setAttribute('data-timer', colorFlash(map[r][ci].element, 'lightyellow'));
+            }
+        }
+        render();
+        checker(sender);
+    }
+
+    function checker(sender) {
+
+        console.log('raised by:', sender.target.dataset.row, sender.target.dataset.column);
+        //let r = Number(sender.target.dataset.row);
+        //let c = Number(sender.target.dataset.column);
+        let target = sender.target;
+
+        for (var ri = 0; ri < map.length; ri++) {
+
+            let counter = 2;
+            let fiboSqeuence = []
+            for (var ci = 0; ci < map[ri].length; ci++) {
+
+                if (map[ri][ci].element.dataset.isfibo == "true") {
+
+                    let curr = {
+                        val: map[ri][ci].value,
+                        col: ci,
+                        pos: positionAtFibonacci(map[ri][ci].value)
+                    }
+
+                    fiboSqeuence.push(map[ri][ci]);
+
+                    if (ci > 1) {
+                        if (map[ri][ci - 1].element.dataset.isfibo == "true" &&
+                            map[ri][ci - 2].element.dataset.isfibo == "true" && //the two number before are Fibonacci numbers
+                            map[ri][ci - 2].value + map[ri][ci - 1].value == map[ri][ci].value //the sum of the two before values is equal to the current
+                        ) {
+                            counter++;
+                        }
+                    }
+                }
+                else {
+                    fiboSqeuence = [];
+                    counter = 2;
+                }
+                if (counter == sequenceNumber) {
+                    prepareToClean(fiboSqeuence);
+                    console.log(counter);
+                }
+            }
+        }
+        render();
+    }
+
+    function colorFlash(element, color) {
+        element.style.backgroundColor = color;
+        return setTimeout(colorClear, 1000, element);
+    }
+
+    function colorClear(element) {
+        element.style.backgroundColor = 'white';
+    }
+
+    function prepareToClean(toCleanArray) {
+        console.log('clean', toCleanArray);
+        for (var i = 0; i < toCleanArray.length; i++) {
+            toCleanArray[i].element.setAttribute('data-toclean', true);
+        }
+    }
+
+    function cleanCell(cell) {
+        cell.value = null;
+        cell.element.setAttribute('data-isfibo', false);
+        cell.element.setAttribute('data-toclean', false);
+        colorFlash(cell.element, 'lightgreen');
+    }
+
+    function positionAtFibonacci(number) {
+
+        if (number <= 1)
+            return number;
+
+        let a = 0, b = 1, c = 1;
+        let res = 1;
+
+        //iterate to get the last Fibonacci number before the given
+        while (c < number) {
+            c = a + b;
+
+            // res is the counter for the position in the sequence
+            res++;
+            a = b;
+            b = c;
+        }
+
+        return res;
+    }
+
+    function isFibonacci(number) {
+        if (!number)
+            return false;
+        //Regarding the wikipedia, a number is Fibonacci number if it is a perfect squeare 
+        return isPerfectSqueare(5 * number * number + 4) || isPerfectSqueare(5 * number * number - 4);
+    }
+    function isPerfectSqueare(number) {
+        var s = Number(Math.sqrt(number).toFixed(0))
+        return (s * s === number);
+    }
+
+    generate();
+</script>
+
+</html>
