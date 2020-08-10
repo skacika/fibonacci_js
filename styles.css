@@ -1,0 +1,58 @@
+#container {
+    display: grid;
+    grid-template-columns: repeat(50, 15px);
+    grid-template-rows: repeat(50, 15px);
+    gap: 1px;
+}
+
+html{
+    font-size: x-small;
+}
+.yellow {
+    animation-name: yellowAnimation;
+    animation-duration: 0.5s;
+}
+
+.green {
+    animation-name: greenAnimation;
+    animation-duration: 0.5s;
+}
+
+@keyframes yellowAnimation {
+    from {
+        background-color: yellow;
+    }
+
+    to {
+        background-color: white;
+    }
+}
+
+@keyframes greenAnimation {
+    from {
+        background-color: lightgreen;
+    }
+
+    to {
+        background-color: white;
+    }
+}
+
+#container>div {
+    background-color: white;
+    border: solid 1px lightgray;
+    text-align: center;
+    /* iOS Safari */
+    -webkit-touch-callout: none;
+    /* Safari */
+    -webkit-user-select: none;
+    /* Konqueror HTML */
+    -khtml-user-select: none;
+    /* Firefox */
+    -moz-user-select: none;
+    /* Internet Explorer/Edge */
+    -ms-user-select: none;
+    /* Non-prefixed version, currently
+    supported by Chrome and Opera */
+    user-select: none;
+}
