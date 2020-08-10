@@ -8,8 +8,7 @@
     var lastMap = [];
 
     function render() {
-        //console.log('rendering');
-        //TODO: performance issue with the original 50x50 size when we are cleaning the cells
+        console.log('rendering');        
         for (var r = 0; r < map.length; r++) {
             for (var c = 0; c < map[r].length; c++) {
                 let cell = map[r][c];
@@ -20,6 +19,7 @@
                 cell.element.innerText = cell.value;
             }
         }
+        window.innerHeight;
     }
 
     function generate() {
@@ -174,15 +174,17 @@
 
     function colorFlash(element, isClean) {
 
-        //TODO: outsource the class names
+        //TODO: outsource and rename the class names
         let colorClass = isClean ? 'green' : 'yellow';
         element.classList.remove('green');
-        element.classList.remove('yellow');
         element.classList.add(colorClass);
         element.style.animation = "none";
         //layout thrasing.  https://gist.github.com/paulirish/5d52fb081b3570c81e3a
         //we need this workaround to re-animate the coloring effect.
-        element.offsetLeft;
+        //We have to avoid the layout trashing. because the class will change from 'yellow' to 'green' for sure, than we can make it as an exeption
+        //TODO: Check the possibility with setTimout. animation is this is quite resource heavy because of the layout trashing. 
+        if(!isClean) 
+            element.offsetLeft;
         element.style.animation = null;
     }
 
