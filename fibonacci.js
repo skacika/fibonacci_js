@@ -190,7 +190,7 @@ function checkerCoreLogic(row, col, checkContext, direction) {
 
 function colorFlash(element, isClean) {
 
-    //TODO: outsource and rename the class names
+    //DISCUSS: outsource and rename the class names
     let colorClass = isClean ? 'green' : 'yellow';
     element.classList.remove('green');
     element.classList.add(colorClass);
@@ -217,10 +217,6 @@ function cleanCell(cell) {
     colorFlash(cell.element, true);
 }
 
-/*TODO: clear it or refactor it.
-*I use the prev cells to check instead of recalculate the positions every time.
-*Rethink if the 1,1,2 sequence could be beasier with this or not.
-*/
 function positionAtFibonacci(number) {
 
     if (number <= 1)
